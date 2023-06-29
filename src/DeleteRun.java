@@ -4,9 +4,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 public class DeleteRun {
+
+	private static Logger log = Logger.getLogger("main");
 
 	private int count = 0;
 	private int succCount = 0;
@@ -21,14 +26,14 @@ public class DeleteRun {
 			try {
 				Class.forName(DeleteMain.DB_DRIVER);
 			} catch (ClassNotFoundException e) {
-				System.out.println("Failed to load db driver, " + e.getMessage());
+				log.error("Failed to load db driver, " + e.getMessage());
 			}
 	
 			long startTime = System.currentTimeMillis();
 			// Select Work List
 			ArrayList<String> eidList = select();
 			if (eidList == null) {
-				System.out.println("No Update target File");
+				log.error("No Update target File");
 				return;
 			} else {
 				updateStatus(eidList);
@@ -38,14 +43,23 @@ public class DeleteRun {
 			long endTime = System.currentTimeMillis();
 			pTime = (endTime-startTime)/1000;
 		}  catch (Exception ex) {
-					System.out.println("Proc Call error, " + ex.getMessage());
+					log.error("Proc Call error, " + ex.getMessage());
 				}finally {
-					System.out.println("=============================================");
-					System.out.println("TOTAL COUNT\t\t: " + count);
-					System.out.println("SUCCESS COUNT\t\t: " + succCount);
-					System.out.println("FAIL COUNT(DOWN)\t: " + failCount);
-					System.out.println("TOTAL TIME \t\t: " + pTime + " sec");
-					System.out.println("=============================================");				
+					Calendar calendar = Calendar.getInstance();
+					int year = calendar.get(Calendar.YEAR);
+					int month = calendar.get(Calendar.MONTH) + 1; // 월은 0부터 시작하므로 1을 더해줌
+					int day = calendar.get(Calendar.DAY_OF_MONTH);
+					int hour = calendar.get(Calendar.HOUR_OF_DAY);
+					int minute = calendar.get(Calendar.MINUTE);
+					int second = calendar.get(Calendar.SECOND);
+
+					log.debug("=============================================");
+					log.debug("START TIME\t\t: " + year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second);
+					log.debug("TOTAL COUNT\t\t: " + count);
+					log.debug("SUCCESS COUNT\t\t: " + succCount);
+					log.debug("FAIL COUNT(DOWN)\t: " + failCount);
+					log.debug("TOTAL TIME \t\t: " + pTime + " sec");
+					log.debug("=============================================");				
 				}
 	}
 
@@ -55,7 +69,7 @@ public class DeleteRun {
 			conn.setAutoCommit(false);
 			
 		} catch (SQLException e) {
-			System.out.println("DB Connection error : " + e.getMessage());
+			log.error("DB Connection error : " + e.getMessage());
 			return null;
 		}
 		return conn;
@@ -75,21 +89,21 @@ public class DeleteRun {
 			while(rs.next()) {
 				// ecmList.add(rs.getString("ELEMENTID"));
 				if(rs.getString("ELEMENTID") == null || rs.getString("ELEMENTID").equals("")) {
-					System.out.println("[ERROR]there's no ELEMENTID");
+					log.error("[ERROR]there's no ELEMENTID");
 					
 					continue;
 				}
 				ecmList.add(rs.getString("ELEMENTID"));
 			}
 		} catch (SQLException e) {
-			System.out.println("Select Update List Error, " + e.getMessage());			
+			log.error("Select Update List Error, " + e.getMessage());			
 		} finally {
 			try { 
 				if (rs != null) { rs.close(); }
 				if (pstmt != null) { pstmt.close(); }
 //				if (conn != null) { conn.close(); }
 			} catch (SQLException e) {
-				System.out.println("open cursor close error, " + e.getMessage());
+				log.error("open cursor close error, " + e.getMessage());
 			}
 		}
 		return ecmList;
@@ -108,7 +122,7 @@ public class DeleteRun {
 				ret = pstmt.executeUpdate();
 				succCount += 1;
 				if (ret < 1) {
-					System.out.println("[DBUpdate]ExcuteUpdate is Failed, " + eid);
+					log.error("[DBUpdate]ExcuteUpdate is Failed, " + eid);
 					failCount += 1;
 				}
 			}
@@ -117,15 +131,15 @@ public class DeleteRun {
 			try {				
 				if (conn != null) { conn.rollback(); }							
 			} catch (SQLException e1) {
-				System.out.println("Failed to rollback, " + e1.getMessage());
+				log.error("Failed to rollback, " + e1.getMessage());
 			}
-			System.out.println("update status Error, " + e.getMessage());
+			log.error("update status Error, " + e.getMessage());
 		} finally {
 			try {
 				if (pstmt != null) { pstmt.close(); } 
 //				if (conn != null) { conn.close(); }
 			} catch (SQLException e) {
-				System.out.println("open cursor close error, " + e.getMessage());
+				log.error("open cursor close error, " + e.getMessage());
 			}
 		}
 	}
@@ -134,7 +148,7 @@ public class DeleteRun {
 		try {
 			if (conn != null) { conn.close(); }			
 		} catch (Exception e) {
-			System.out.println("Db DisConnect is failure");
+			log.error("Db DisConnect is failure");
 		}
 	}
 }

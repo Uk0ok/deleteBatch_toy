@@ -1,8 +1,12 @@
 import java.io.FileReader;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 
 public class DeleteMain {
+
+	private static Logger log = Logger.getLogger("main");
+
 	public static String DB_DRIVER = null;
 	public static String DB_URL = null;
 	public static String DB_ID = null;
@@ -23,7 +27,7 @@ public class DeleteMain {
 	public static void main(String[] args) {
 		FileReader fr;
 
-		System.out.println(" -- Process Start -- ");
+		log.debug(" -- Process Start -- ");
 
 		try {
 			fr = new FileReader("./conf/conf.properties");
@@ -45,7 +49,7 @@ public class DeleteMain {
 			SELECTQUERY = properties.getProperty("SQL.SELECTQUERY");
 			UPDATEQUERY = properties.getProperty("SQL.UPDATEQUERY");
 		} catch (Exception e) {
-			System.out.println(" Properties Load Error, "+ e.getMessage());
+			log.error(" Properties Load Error, "+ e.getMessage());
 			return;
 		}
 		
@@ -53,6 +57,6 @@ public class DeleteMain {
 		delRun.run();
 		delRun.disconnDB();
 
-		System.out.println(" -- Process End -- ");
+		log.debug(" -- Process End -- ");
 	}
 }
